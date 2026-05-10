@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import json 
+from datetime import date
 
 DATA_FILE = "data.json"
 water_level = 0
@@ -7,25 +8,34 @@ coffee_cups = 0
 pos_x = 200
 pos_y = 200
 
+today = str(date.today())
+
 try:
     with open(DATA_FILE, "r") as file:
         data = json.load(file)
-        water_level = data.get("water", 0)
-        coffee_cups = data.get("coffee", 0)
+
         pos_x = data.get("x", 200)
         pos_y = data.get("y", 200)
+
+        saved_date = data.get("date", "")
+
+        if saved_date == today:
+            water_level = data.get("water", 0)
+            coffee_cups = data.get("coffee", 0)
+        else:
+            pass
+
 except FileNotFoundError:
     pass
 
 def save_data():
-
     window.update_idletasks()
-
     data = {
         "water": water_level,
         "coffee": coffee_cups,
         "x": window.winfo_x(),
-        "y":window.winfo_y()
+        "y":window.winfo_y(),
+        "date": today
     }
     with open(DATA_FILE, "w") as file:
         json.dump(data, file)
