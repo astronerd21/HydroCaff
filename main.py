@@ -82,9 +82,7 @@ btn_coffee.pack(pady=5)
 spacer_bottom = ctk.CTkLabel(window, text="")
 spacer_bottom.pack(pady=5)
 
-btn_reset = ctk.CTkButton(window, text="Reset Today", font=("Arial", 12), 
-                          fg_color="#cf0808", border_width=2, text_color=("gray10", "#DCE4EE"), 
-                          hover_color="#650505", command=reset_data)
+btn_reset = ctk.CTkButton(window, text="Reset Today", font=("Arial", 12), fg_color="#cf0808", hover_color="#9D0606", command=reset_data)
 btn_reset.pack(pady=10)
 
 window.mainloop()
