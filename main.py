@@ -4,22 +4,35 @@ import json
 DATA_FILE = "data.json"
 water_level = 0
 coffee_cups = 0
+pos_x = 200
+pos_y = 200
 
 try:
     with open(DATA_FILE, "r") as file:
         data = json.load(file)
         water_level = data.get("water", 0)
         coffee_cups = data.get("coffee", 0)
+        pos_x = data.get("x", 200)
+        pos_y = data.get("y", 200)
 except FileNotFoundError:
     pass
 
 def save_data():
+
+    window.update_idletasks()
+
     data = {
         "water": water_level,
-        "coffee": coffee_cups
+        "coffee": coffee_cups,
+        "x": window.winfo_x(),
+        "y":window.winfo_y()
     }
     with open(DATA_FILE, "w") as file:
         json.dump(data, file)
+
+def on_closing():
+    save_data()
+    window.destroy()
 
 def add_water():
     global water_level
@@ -43,7 +56,9 @@ def reset_data():
 
 window = tk.Tk()
 window.title("HydroCaff")
-window.geometry("300x420") 
+
+window.geometry(f"300x420+{pos_x}+{pos_y}")
+window.protocol("WM_DELETE_WINDOW", on_closing)
 
 lbl_title = tk.Label(window, text="My Daily Tracker", font=("Arial", 16, "bold"))
 lbl_title.pack(pady=20)
