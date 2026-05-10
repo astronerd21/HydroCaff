@@ -56,8 +56,8 @@ def reset_data():
 
 window = tk.Tk()
 window.title("HydroCaff")
-
 window.geometry(f"300x420+{pos_x}+{pos_y}")
+window.resizable(False, False)
 window.protocol("WM_DELETE_WINDOW", on_closing)
 
 lbl_title = tk.Label(window, text="My Daily Tracker", font=("Arial", 16, "bold"))
