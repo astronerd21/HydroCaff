@@ -1,4 +1,4 @@
-import tkinter as tk
+import customtkinter as ctk
 import json 
 
 DATA_FILE = "data.json"
@@ -37,51 +37,54 @@ def on_closing():
 def add_water():
     global water_level
     water_level += 250  
-    lbl_water.config(text=f"Water: {water_level} ml")
+    lbl_water.configure(text=f"Water: {water_level} ml")
     save_data() 
 
 def add_coffee():
     global coffee_cups
     coffee_cups += 1  
-    lbl_coffee.config(text=f"Coffee: {coffee_cups} Cups")
+    lbl_coffee.configure(text=f"Coffee: {coffee_cups} Cups")
     save_data() 
 
 def reset_data():
     global water_level, coffee_cups
     water_level = 0
     coffee_cups = 0
-    lbl_water.config(text=f"Water: {water_level} ml")
-    lbl_coffee.config(text=f"Coffee: {coffee_cups} Cups")
+    lbl_water.configure(text=f"Water: {water_level} ml")
+    lbl_coffee.configure(text=f"Coffee: {coffee_cups} Cups")
     save_data() 
 
-window = tk.Tk()
+ctk.set_appearance_mode("System")
+window = ctk.CTk()
 window.title("HydroCaff")
 window.geometry(f"300x420+{pos_x}+{pos_y}")
 window.resizable(False, False)
 window.protocol("WM_DELETE_WINDOW", on_closing)
 
-lbl_title = tk.Label(window, text="My Daily Tracker", font=("Arial", 16, "bold"))
+lbl_title = ctk.CTkLabel(window, text="My Daily Tracker", font=("Arial", 16, "bold"))
 lbl_title.pack(pady=20)
 
-lbl_water = tk.Label(window, text=f"Water: {water_level} ml", font=("Arial", 14))
+lbl_water = ctk.CTkLabel(window, text=f"Water: {water_level} ml", font=("Arial", 14))
 lbl_water.pack(pady=5)
 
-btn_water = tk.Button(window, text="+ 1 Glass of Water (250ml)", font=("Arial", 12), command=add_water)
+btn_water = ctk.CTkButton(window, text="+ 1 Glass of Water (250ml)", font=("Arial", 12),fg_color="#048ac9", hover_color="#044869", command=add_water)
 btn_water.pack(pady=5)
 
-spacer = tk.Label(window, text="")
+spacer = ctk.CTkLabel(window, text="")
 spacer.pack(pady=5)
 
-lbl_coffee = tk.Label(window, text=f"Coffee: {coffee_cups} Cups", font=("Arial", 14))
+lbl_coffee = ctk.CTkLabel(window, text=f"Coffee: {coffee_cups} Cups", font=("Arial", 14))
 lbl_coffee.pack(pady=5)
 
-btn_coffee = tk.Button(window, text="+ 1 Cup of Coffee", font=("Arial", 12), command=add_coffee)
+btn_coffee = ctk.CTkButton(window, text="+ 1 Cup of Coffee", font=("Arial", 12), fg_color="#8b5a2b", hover_color="#6b4226", command=add_coffee)
 btn_coffee.pack(pady=5)
 
-spacer_bottom = tk.Label(window, text="")
+spacer_bottom = ctk.CTkLabel(window, text="")
 spacer_bottom.pack(pady=5)
 
-btn_reset = tk.Button(window, text="Reset Today", font=("Arial", 10), fg="red", command=reset_data)
+btn_reset = ctk.CTkButton(window, text="Reset Today", font=("Arial", 12), 
+                          fg_color="#cf0808", border_width=2, text_color=("gray10", "#DCE4EE"), 
+                          hover_color="#650505", command=reset_data)
 btn_reset.pack(pady=10)
 
 window.mainloop()
