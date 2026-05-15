@@ -1,98 +1,108 @@
 import customtkinter as ctk
-import json 
+import json
+import os
 from datetime import date
 
-DATA_FILE = "data.json"
-water_level = 0
-coffee_cups = 0
-pos_x = 200
-pos_y = 200
+class HydroCaffApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-today = str(date.today())
+        self.title("HydroCaff")
+        self.resizable(False, False)
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        ctk.set_appearance_mode("System")
 
-try:
-    with open(DATA_FILE, "r") as file:
-        data = json.load(file)
+        self.data_dir = os.path.join(os.path.expanduser("~"), "AppData", "Local", "HydroCaff")
+        os.makedirs(self.data_dir, exist_ok=True)
+        self.data_file = os.path.join(self.data_dir, "data.json")
 
-        pos_x = data.get("x", 200)
-        pos_y = data.get("y", 200)
+        self.water_level = 0
+        self.coffee_cups = 0
+        self.today = str(date.today())
+        
+        self.load_data()
+        self.setup_ui()
 
-        saved_date = data.get("date", "")
-
-        if saved_date == today:
-            water_level = data.get("water", 0)
-            coffee_cups = data.get("coffee", 0)
-        else:
+    def load_data(self):
+        pos_x, pos_y = 200, 200
+        try:
+            with open(self.data_file, "r") as file:
+                data = json.load(file)
+                pos_x = int(data.get("x", 200))
+                pos_y = int(data.get("y", 200))
+                
+                if data.get("last_date", "") == self.today:
+                    self.water_level = int(data.get("water", 0))
+                    self.coffee_cups = int(data.get("coffee", 0))
+        except (FileNotFoundError, json.JSONDecodeError, ValueError):
             pass
+        
+        self.geometry(f"300x420+{pos_x}+{pos_y}")
 
-except FileNotFoundError:
-    pass
+    def save_data(self):
+        self.update_idletasks()
+        data = {
+            "water": self.water_level,
+            "coffee": self.coffee_cups,
+            "x": self.winfo_x(),
+            "y": self.winfo_y(),
+            "last_date": self.today
+        }
+        with open(self.data_file, "w") as file:
+            json.dump(data, file)
 
-def save_data():
-    window.update_idletasks()
-    data = {
-        "water": water_level,
-        "coffee": coffee_cups,
-        "x": window.winfo_x(),
-        "y":window.winfo_y(),
-        "date": today
-    }
-    with open(DATA_FILE, "w") as file:
-        json.dump(data, file)
+    def on_closing(self):
+        self.save_data()
+        self.destroy()
 
-def on_closing():
-    save_data()
-    window.destroy()
+    def update_labels(self):
+        self.lbl_water.configure(text=f"Water: {self.water_level} ml")
+        self.lbl_coffee.configure(text=f"Coffee: {self.coffee_cups} Cups")
 
-def add_water():
-    global water_level
-    water_level += 250  
-    lbl_water.configure(text=f"Water: {water_level} ml")
-    save_data() 
+    def add_water(self):
+        self.water_level += 250  
+        self.update_labels()
+        self.save_data() 
 
-def add_coffee():
-    global coffee_cups
-    coffee_cups += 1  
-    lbl_coffee.configure(text=f"Coffee: {coffee_cups} Cups")
-    save_data() 
+    def add_coffee(self):
+        self.coffee_cups += 1  
+        self.update_labels()
+        self.save_data() 
 
-def reset_data():
-    global water_level, coffee_cups
-    water_level = 0
-    coffee_cups = 0
-    lbl_water.configure(text=f"Water: {water_level} ml")
-    lbl_coffee.configure(text=f"Coffee: {coffee_cups} Cups")
-    save_data() 
+    def reset_data(self):
+        self.water_level = 0
+        self.coffee_cups = 0
+        self.update_labels()
+        self.save_data() 
 
-ctk.set_appearance_mode("System")
-window = ctk.CTk()
-window.title("HydroCaff")
-window.geometry(f"300x420+{pos_x}+{pos_y}")
-window.resizable(False, False)
-window.protocol("WM_DELETE_WINDOW", on_closing)
+    def setup_ui(self):
+        self.lbl_title = ctk.CTkLabel(self, text="My Daily Tracker", font=("Arial", 16, "bold"))
+        self.lbl_title.pack(pady=20)
 
-lbl_title = ctk.CTkLabel(window, text="My Daily Tracker", font=("Arial", 16, "bold"))
-lbl_title.pack(pady=20)
+        self.lbl_water = ctk.CTkLabel(self, text=f"Water: {self.water_level} ml", font=("Arial", 14))
+        self.lbl_water.pack(pady=5)
 
-lbl_water = ctk.CTkLabel(window, text=f"Water: {water_level} ml", font=("Arial", 14))
-lbl_water.pack(pady=5)
+        self.btn_water = ctk.CTkButton(self, text="+ 1 Glass of Water (250ml)", font=("Arial", 12),
+                                       fg_color="#048ac9", hover_color="#044869", command=self.add_water)
+        self.btn_water.pack(pady=5)
 
-btn_water = ctk.CTkButton(window, text="+ 1 Glass of Water (250ml)", font=("Arial", 12),fg_color="#048ac9", hover_color="#044869", command=add_water)
-btn_water.pack(pady=5)
+        self.spacer = ctk.CTkLabel(self, text="")
+        self.spacer.pack(pady=5)
 
-spacer = ctk.CTkLabel(window, text="")
-spacer.pack(pady=5)
+        self.lbl_coffee = ctk.CTkLabel(self, text=f"Coffee: {self.coffee_cups} Cups", font=("Arial", 14))
+        self.lbl_coffee.pack(pady=5)
 
-lbl_coffee = ctk.CTkLabel(window, text=f"Coffee: {coffee_cups} Cups", font=("Arial", 14))
-lbl_coffee.pack(pady=5)
+        self.btn_coffee = ctk.CTkButton(self, text="+ 1 Cup of Coffee", font=("Arial", 12), 
+                                        fg_color="#8b5a2b", hover_color="#6b4226", command=self.add_coffee)
+        self.btn_coffee.pack(pady=5)
 
-btn_coffee = ctk.CTkButton(window, text="+ 1 Cup of Coffee", font=("Arial", 12), fg_color="#8b5a2b", hover_color="#6b4226", command=add_coffee)
-btn_coffee.pack(pady=5)
+        self.spacer_bottom = ctk.CTkLabel(self, text="")
+        self.spacer_bottom.pack(pady=5)
 
-spacer_bottom = ctk.CTkLabel(window, text="")
-spacer_bottom.pack(pady=5)
+        self.btn_reset = ctk.CTkButton(self, text="Reset Today", font=("Arial", 12), 
+                                       fg_color="#cf0808", hover_color="#9D0606", command=self.reset_data)
+        self.btn_reset.pack(pady=10)
 
-btn_reset = ctk.CTkButton(window, text="Reset Today", font=("Arial", 12), fg_color="#cf0808", hover_color="#9D0606", command=reset_data)
-btn_reset.pack(pady=10)
-
-window.mainloop()
+if __name__ == "__main__":
+    app = HydroCaffApp()
+    app.mainloop()
