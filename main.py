@@ -1,6 +1,7 @@
 import customtkinter as ctk
+from tkinter import messagebox
 import json
-import os
+from pathlib import Path
 from datetime import date
 
 class HydroCaffApp(ctk.CTk):
@@ -12,9 +13,9 @@ class HydroCaffApp(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         ctk.set_appearance_mode("System")
 
-        self.data_dir = os.path.join(os.path.expanduser("~"), "AppData", "Local", "HydroCaff")
-        os.makedirs(self.data_dir, exist_ok=True)
-        self.data_file = os.path.join(self.data_dir, "data.json")
+        self.data_dir = Path.home() / "AppData" / "Local" / "HydroCaff"
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.data_file = self.data_dir / "data.json"
 
         self.water_level = 0
         self.coffee_cups = 0
@@ -26,30 +27,33 @@ class HydroCaffApp(ctk.CTk):
     def load_data(self):
         pos_x, pos_y = 200, 200
         try:
-            with open(self.data_file, "r") as file:
+            with open(self.data_file, "r", encoding = "utf-8") as file:
                 data = json.load(file)
-                pos_x = int(data.get("x", 200))
-                pos_y = int(data.get("y", 200))
+                pos_x = max(0, int(data.get("x", 200)))
+                pos_y = max(0, int(data.get("y", 200)))
                 
                 if data.get("last_date", "") == self.today:
-                    self.water_level = int(data.get("water", 0))
-                    self.coffee_cups = int(data.get("coffee", 0))
+                    self.water_level = max(0, int(data.get("water", 0)))
+                    self.coffee_cups = max(0, int(data.get("coffee", 0)))
         except (FileNotFoundError, json.JSONDecodeError, ValueError):
             pass
         
         self.geometry(f"300x420+{pos_x}+{pos_y}")
 
     def save_data(self):
-        self.update_idletasks()
-        data = {
-            "water": self.water_level,
-            "coffee": self.coffee_cups,
-            "x": self.winfo_x(),
-            "y": self.winfo_y(),
-            "last_date": self.today
-        }
-        with open(self.data_file, "w") as file:
-            json.dump(data, file)
+        try:
+            self.update_idletasks()
+            data = {
+                "water": self.water_level,
+                "coffee": self.coffee_cups,
+                "x": self.winfo_x(),
+                "y": self.winfo_y(),
+                "last_date": self.today
+            }
+            with open(self.data_file, "w", encoding = "utf-8") as file:
+                json.dump(data, file, indent = 2)
+        except OSError as e:
+            print(f"Error saving data: {e}")
 
     def on_closing(self):
         self.save_data()
@@ -70,10 +74,12 @@ class HydroCaffApp(ctk.CTk):
         self.save_data() 
 
     def reset_data(self):
-        self.water_level = 0
-        self.coffee_cups = 0
-        self.update_labels()
-        self.save_data() 
+        answer = messagebox.askyesno("Reset Data", "Are you sure you want to reset today's data?")
+        if answer:
+            self.water_level = 0
+            self.coffee_cups = 0
+            self.update_labels()
+            self.save_data() 
 
     def setup_ui(self):
         self.lbl_title = ctk.CTkLabel(self, text="My Daily Tracker", font=("Arial", 16, "bold"))
