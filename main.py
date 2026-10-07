@@ -101,7 +101,8 @@ class HydroCaffApp(ctk.CTk):
 
     def reset_data(self):
         if messagebox.askyesno(
-            "Reset Today", "Wasser- und Kaffeezähler für heute zurücksetzen?"
+            "Reset Today",
+            "Are you sure you want to reset today's water and coffee counts?",
         ):
             self.history[self.current_date_str] = {"water": 0, "coffee": 0}
             self.update_ui_state()
